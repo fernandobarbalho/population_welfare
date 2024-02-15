@@ -40,20 +40,70 @@ df_trabalho<-
   group_by(countrycode) %>%
   filter(year >= 1959) %>%
   mutate(gN =  ((pop/lag(pop))-1) *100,
-         gC = (((rconna/pop) /lag(rconna/pop))-1)*100,
+         cons_per_capita = ccon/pop, 
+         gC = (((cons_per_capita) /lag(cons_per_capita))-1)*100,
          ct_constant = rconna / pop,
          vc = const_u + log(ct_constant/const_c),
          gN_vc = gN * vc,
-         glambda = gN_vc + gC
+         glambda = gN_vc + gC,
+         decada = case_when(
+           between(year,1960, 1969) ~ "1960 - 1969",
+           between(year,1970, 1979) ~ "1970 - 1979",
+           between(year,1980, 1989) ~ "1980 - 1989",
+           between(year,1990, 1999) ~ "1990 - 1999",
+           between(year,2000, 2010) ~ "2000 - 2010",
+           between(year,2011, 2019) ~ "2011 - 2019") 
          ) %>%
   ungroup() %>%
-  select( countrycode, country, year, pop, gN, rconna, gC, ct_constant, vc, gN_vc,glambda ) %>%
+  select( countrycode, country, year, pop, gN, rconna, cons_per_capita, gC, ct_constant, vc, gN_vc,glambda,decada ) 
+
+
+df_trabalho %>%
+  filter(countrycode %in% c("CHN","BRA","ETH")) %>%
+  ggplot(aes(x=year, y=gC)) +
+  geom_line(aes(color=country, group = country))
+
+
+fab<-
+  pwt1001 %>%
+  filter(countrycode %in% c("CHN"),
+         year>=1959) %>%
+  group_by(countrycode) %>%
+  mutate(lag_ccon = ((ccon/lag(ccon))-1)*100,
+         lag_cda = ((cda/lag(cda))-1)*100,
+         lag_rconna = ((rconna/lag(rconna))-1)*100,
+         lag_rdana = ((rdana/lag(rdana)-1))*100) %>%
+  select(countrycode, year,ccon, cda, rconna, rdana, lag_ccon, lag_cda, lag_rconna, lag_rdana) %>%
+  summarise(mean(lag_ccon, na.rm = TRUE),
+            mean(lag_cda, na.rm = TRUE),
+            mean(lag_rconna, na.rm = TRUE),
+            mean(lag_rdana, na.rm = TRUE))
+
+df_trabalho %>%
+  filter(countrycode %in% c("CHN","ETH")) %>%
   summarise(
-    media_glambda = mean(glambda, na.rm = TRUE),
+    mean(gC),
+    .by = c(countrycode,decada)
+    
+  )
+  
+
+
+
+df_trabalho_agregado<-
+df_trabalho%>%
+  summarise(
     media_gc = mean(gC, na.rm = TRUE),
     media_gN = mean(gN, na.rm = TRUE),
     media_vc = mean(vc, na.rm = TRUE),
     media_gN_vc = mean(gN_vc, na.rm = TRUE),
-    pop_share = (media_gN_vc/media_glambda)*100,
-    .by = country
+    glambda_periodo = media_gN_vc + media_gc ,
+    pop_share = (media_gN_vc/glambda_periodo)*100,
+    .by = c(country, countrycode)
   )
+
+#Cáclulo para países selecionados
+df_trabalho_agregado %>%
+  filter( countrycode %in% paises ) %>%
+  arrange(desc(glambda_periodo))
+
