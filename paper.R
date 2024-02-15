@@ -40,7 +40,7 @@ df_trabalho<-
   group_by(countrycode) %>%
   filter(year >= 1959) %>%
   mutate(gN =  ((pop/lag(pop))-1) *100,
-         gC = ((rconna/lag(rconna))-1)*100,
+         gC = (((rconna/pop) /lag(rconna/pop))-1)*100,
          ct_constant = rconna / pop,
          vc = const_u + log(ct_constant/const_c),
          gN_vc = gN * vc,
@@ -54,5 +54,6 @@ df_trabalho<-
     media_gN = mean(gN, na.rm = TRUE),
     media_vc = mean(vc, na.rm = TRUE),
     media_gN_vc = mean(gN_vc, na.rm = TRUE),
+    pop_share = (media_gN_vc/media_glambda)*100,
     .by = country
   )
