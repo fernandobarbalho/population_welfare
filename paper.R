@@ -3,7 +3,12 @@ library(readxl)
 
 pwt1001 <- read_excel("pwt1001.xlsx", sheet = "Data")
 
-cons_per_capita_ref <- 13573024/297.758969
+valores_referencia<-
+  pwt1001 %>%
+  filter(countrycode == "USA",
+         year== 2006)
+
+cons_per_capita_ref <- valores_referencia$ccon/valores_referencia$pop
 
 const_u <- (185000/cons_per_capita_ref)  #4.87
 
@@ -42,7 +47,7 @@ df_trabalho<-
   mutate(gN =  ((pop/lag(pop))-1) *100,
          cons_per_capita = ccon/pop, 
          gC = (((cons_per_capita) /lag(cons_per_capita))-1)*100,
-         ct_constant = rconna / pop,
+         ct_constant = ccon / pop,
          vc = const_u + log(ct_constant/const_c),
          gN_vc = gN * vc,
          glambda = gN_vc + gC,
@@ -55,11 +60,11 @@ df_trabalho<-
            between(year,2011, 2019) ~ "2011 - 2019") 
          ) %>%
   ungroup() %>%
-  select( countrycode, country, year, pop, gN, rconna, cons_per_capita, gC, ct_constant, vc, gN_vc,glambda,decada ) 
+  select( countrycode, country, year, pop, gN, ccon, cons_per_capita, gC, ct_constant, vc, gN_vc,glambda,decada ) 
 
 
 df_trabalho %>%
-  filter(countrycode %in% c("CHN","BRA","ETH")) %>%
+  filter(countrycode %in% c("CHN", "ETH")) %>%
   ggplot(aes(x=year, y=gC)) +
   geom_line(aes(color=country, group = country))
 
@@ -95,8 +100,8 @@ df_trabalho%>%
   summarise(
     media_gc = mean(gC, na.rm = TRUE),
     media_gN = mean(gN, na.rm = TRUE),
-    media_vc = mean(vc, na.rm = TRUE),
-    media_gN_vc = mean(gN_vc, na.rm = TRUE),
+    media_vc = mean(const_u + log((ccon / pop)/const_c), na.rm = TRUE),
+    media_gN_vc = media_gN * media_vc,
     glambda_periodo = media_gN_vc + media_gc ,
     pop_share = (media_gN_vc/glambda_periodo)*100,
     .by = c(country, countrycode)
