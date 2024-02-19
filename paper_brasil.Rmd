@@ -1,0 +1,36 @@
+---
+title: "Paper wellfare Brazil"
+output: html_document
+date: "2024-02-19"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+
+dados_estados_paper <- readRDS("~/github/population_welfare/dados_estados_paper.RDS")
+
+const_u<- 4.164864 #Confomre cálculo feito em paper.R
+cont_c<- 44419.22 #Confomre cálculo feito em paper.R
+
+```
+
+
+```{r cars}
+
+ dados_estados_paper %>%
+  group_by(sigla_uf) %>%
+  mutate(gN =  ((populacao/lag(populacao))-1) *100,
+         gC = (((consumo_per_capita) /lag(consumo_per_capita))-1)*100,
+         vc = const_u + log(consumo_per_capita/const_c),
+         gN_vc = gN * vc,
+         glambda = gN_vc + gC,
+         decada = case_when(
+           between(ano,2002, 2010) ~ "2002 - 2010",
+           between(ano,2011, 2019) ~ "2011 - 2019") 
+         ) %>%
+  ungroup() %>%
+  select( sigla_uf, ano, populacao, gN, consumo_uf, consumo_per_capita, gC, vc, gN_vc,glambda,decada ) 
+
+
+```
+

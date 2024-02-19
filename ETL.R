@@ -49,13 +49,14 @@ populacao_estados %>%
     pib_estados %>%
       mutate (id_uf = as.numeric(unidade_da_federacao_codigo),
               ano = as.numeric(ano))
-  )
+  ) %>%
+  select(id_uf, sigla_uf, ano, populacao, valor)
 
 
 pwt1001_br <-
   pwt1001 %>%
   filter(countrycode == "BRA") %>%
-  select(year, ccon, rconna, csh_c, csh_g, rgdpna, pop )
+  select(year, csh_c, csh_g, rgdpna )
 
 
 pwt1001_usa <-
@@ -64,3 +65,24 @@ pwt1001_usa <-
   mutate(dif_pe = rgdpna- cgdpe,
          dif_po = rgdpna- cgdpo) %>%
   select(year, ccon, rconna, csh_c, csh_g, rgdpna, pop, cgdpe, cgdpo, dif_pe, dif_po )
+
+
+dados_estados_paper<-
+dados_estados %>%
+  inner_join(
+    pwt1001_br %>%
+      rename(ano = year)
+  ) %>%
+  mutate(valor  = valor /100,
+         populacao = populacao/10^6) %>%
+  mutate(consumo_uf = valor * ((csh_c+csh_g)*rgdpna)) %>% #Cálculo do consumo estimado por UF em US$ 2017
+  mutate(consumo_per_capita = consumo_uf/populacao)
+
+
+
+
+dados_estados_paper %>%
+  readr::write_csv("dados_estados_paper.csv")
+
+dados_estados_paper%>%
+  saveRDS("dados_estados_paper.RDS")
