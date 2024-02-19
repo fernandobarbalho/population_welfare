@@ -137,3 +137,59 @@ df_trabalho_agregado_v2<-
 df_trabalho_agregado_v2 %>%
   filter( countrycode %in% paises ) %>%
   arrange(desc(glambda_periodo))
+
+
+df_trabalho_agregado_v2<-
+  df_trabalho_v2%>%
+  summarise(
+    media_gc = mean(gC, na.rm = TRUE),
+    media_gN = mean(gN, na.rm = TRUE),
+    media_vc = mean(const_u + log((ccon / pop)/const_c), na.rm = TRUE),
+    media_gN_vc = mean(gN * vc,na.rm = TRUE),
+    glambda_periodo = media_gN_vc + media_gc ,
+    pop_share = (media_gN_vc/glambda_periodo)*100,
+    .by = c(country, countrycode)
+  )
+
+#Cáclulo para países selecionados
+df_trabalho_agregado_v2 %>%
+  filter( countrycode %in% paises ) %>%
+  arrange(desc(glambda_periodo))
+
+
+
+
+df_trabalho_agregado_v2<-
+  df_trabalho_v2%>%
+  summarise(
+    media_gc = mean(gC, na.rm = TRUE),
+    media_gN = mean(gN, na.rm = TRUE),
+    media_vc = mean(const_u + log((ccon / pop)/const_c), na.rm = TRUE),
+    media_gN_vc = mean(gN_vc,na.rm = TRUE),
+    glambda_periodo = media_gN_vc + media_gc ,
+    pop_share = (media_gN_vc/glambda_periodo)*100,
+    .by = c(country, countrycode)
+  )
+
+#Cáclulo para países selecionados
+df_trabalho_agregado_v2 %>%
+  filter( countrycode %in% paises ) %>%
+  arrange(desc(glambda_periodo))
+
+
+df_trabalho_agregado_v2<-
+  df_trabalho_v2%>%
+  summarise(
+    media_gc = mean(gC, na.rm = TRUE),
+    media_gN = mean(gN, na.rm = TRUE),
+    media_vc = mean(const_u + log((ccon / pop)/const_c), na.rm = TRUE),
+    media_gN_vc = mean(gN_vc,na.rm = TRUE),
+    glambda_periodo =mean(glambda,na.rm=TRUE) ,
+    pop_share = (media_gN_vc/glambda_periodo)*100,
+    .by = c(country, countrycode)
+  )
+
+#Cáclulo para países selecionados
+df_trabalho_agregado_v2 %>%
+  filter( countrycode %in% paises ) %>%
+  arrange(desc(glambda_periodo))

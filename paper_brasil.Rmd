@@ -31,10 +31,11 @@ dados_calculo_paper<-
          gN_vc = gN * vc,
          glambda = gN_vc + gC,
          decada = case_when(
-           between(ano,2002, 2010) ~ "2002 - 2010",
+           between(ano,2003, 2010) ~ "2003 - 2010",
            between(ano,2011, 2019) ~ "2011 - 2019") 
          ) %>%
   ungroup() %>%
+  filter(ano>2002) %>%
   select( sigla_uf, ano, populacao, gN, consumo_uf, consumo_per_capita, gC, vc, gN_vc,glambda,decada ) 
 
 
@@ -76,10 +77,48 @@ mapa_estados %>%
   ggplot()+
   geom_sf(aes(fill=glambda_periodo)) +
   scale_fill_continuous_sequential(palette="Heat") +
-  facet_wrap(decada~.)
+  facet_wrap(decada~.) +
+  theme_void() +
+  labs(
+    title = "Crescimento do bem estar equivalente ao consumo",
+    fill = "(%)"
+  )
   
   
   
+
+```
+
+```{r}
+dados_calculo_paper %>%
+  ggplot(aes(x=as.factor(ano), y=vc)) +
+  geom_line(aes(group = sigla_uf))
+```
+
+```{r}
+
+dados_calculo_paper %>%
+  ggplot(aes(x=as.factor(ano), y=gN)) +
+  geom_line(aes(group = sigla_uf))
+```
+
+```{r}
+dados_calculo_paper %>%
+  ggplot(aes(x=as.factor(ano), y=gC)) +
+  geom_line(aes(group = sigla_uf))
+```
+
+```{r}
+dados_calculo_paper %>%
+  filter(populacao < 5) %>%
+  ggplot(aes(x=as.factor(ano), y=populacao)) +
+  geom_line(aes(group = sigla_uf)) 
+```
+
+```{r}
+dados_calculo_paper %>%
+  ggplot(aes(x=sigla_uf, y=gC)) +
+  geom_boxplot()
 
 ```
 
