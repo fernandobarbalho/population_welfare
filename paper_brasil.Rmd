@@ -5,12 +5,17 @@ date: "2024-02-19"
 ---
 
 ```{r setup, include=FALSE}
+library(tidyverse)
+library(colorspace)
+
+
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
 dados_estados_paper <- readRDS("~/github/population_welfare/dados_estados_paper.RDS")
+mapa_estados <- readRDS("~/Github/population_welfare/mapa_estados.rds")
 
 const_u<- 4.164864 #Confomre cálculo feito em paper.R
-cont_c<- 44419.22 #Confomre cálculo feito em paper.R
+const_c<- 44419.22 #Confomre cálculo feito em paper.R
 
 ```
 
@@ -41,22 +46,40 @@ dados_calculo_paper%>%
   summarise(
     media_gc = mean(gC, na.rm = TRUE),
     media_gN = mean(gN, na.rm = TRUE),
-    media_vc = mean(vc, na.rm = TRUE),
-    media_gN_vc = media_gN * media_vc,
+    media_vc = mean(const_u + log(consumo_per_capita/const_c), na.rm = TRUE),
+    media_gN_vc = mean(gN_vc, na.rm = TRUE), # media_gN * media_vc,
     glambda_periodo = media_gN_vc + media_gc ,
     pop_share = (media_gN_vc/glambda_periodo)*100,
-    .by = c(sigla_uf)
+    .by = c(sigla_uf, decada)
   )
 
 
 dados_calculo_paper_agregado %>%
   select(sigla_uf,
+         decada,
          glambda_periodo,
          media_gc,
          media_gN,
          media_vc,
          media_gN_vc,
          pop_share) %>%
-  arrange(desc(glambda_periodo))
+  arrange(decada, desc(glambda_periodo))
+```
+
+
+```{r}
+mapa_estados %>%
+  inner_join(
+    dados_calculo_paper_agregado %>%
+      rename(abbrev_state = sigla_uf)
+    ) %>%
+  ggplot()+
+  geom_sf(aes(fill=glambda_periodo)) +
+  scale_fill_continuous_sequential(palette="Heat") +
+  facet_wrap(decada~.)
+  
+  
+  
+
 ```
 

@@ -1,6 +1,7 @@
 library(tidyverse)
 library(readxl)
 library(sidrar)
+library(geobr)
 
 pwt1001 <- read_excel("pwt1001.xlsx", sheet = "Data")
 
@@ -86,3 +87,9 @@ dados_estados_paper %>%
 
 dados_estados_paper%>%
   saveRDS("dados_estados_paper.RDS")
+
+mapa_estados<-
+  geobr::read_state()
+
+
+mapa_estados %>% saveRDS("mapa_estados.rds")
