@@ -17,6 +17,7 @@ cont_c<- 44419.22 #Confomre cálculo feito em paper.R
 
 ```{r cars}
 
+dados_calculo_paper<-
  dados_estados_paper %>%
   group_by(sigla_uf) %>%
   mutate(gN =  ((populacao/lag(populacao))-1) *100,
@@ -32,5 +33,30 @@ cont_c<- 44419.22 #Confomre cálculo feito em paper.R
   select( sigla_uf, ano, populacao, gN, consumo_uf, consumo_per_capita, gC, vc, gN_vc,glambda,decada ) 
 
 
+```
+
+```{r}
+dados_calculo_paper_agregado<-
+dados_calculo_paper%>%
+  summarise(
+    media_gc = mean(gC, na.rm = TRUE),
+    media_gN = mean(gN, na.rm = TRUE),
+    media_vc = mean(vc, na.rm = TRUE),
+    media_gN_vc = media_gN * media_vc,
+    glambda_periodo = media_gN_vc + media_gc ,
+    pop_share = (media_gN_vc/glambda_periodo)*100,
+    .by = c(sigla_uf)
+  )
+
+
+dados_calculo_paper_agregado %>%
+  select(sigla_uf,
+         glambda_periodo,
+         media_gc,
+         media_gN,
+         media_vc,
+         media_gN_vc,
+         pop_share) %>%
+  arrange(desc(glambda_periodo))
 ```
 
