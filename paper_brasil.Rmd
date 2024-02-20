@@ -9,6 +9,7 @@ library(tidyverse)
 library(colorspace)
 library(patchwork)
 library(sf)
+library(ggrepel)
 
 
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
@@ -122,7 +123,7 @@ dados_calculo_paper_agregado %>%
   facet_wrap(decada~.) +
   theme_light() +
   theme(
-    panel.grid =  element_blank() 
+    panel.grid =  element_blank()
   ) +
   labs(
     x= "",
@@ -144,7 +145,7 @@ dados_calculo_paper_agregado %>%
   filter(componente %in% c("media_gc","media_gN_vc")) %>%
   mutate(componente = ifelse(componente == "media_gc", "consumo", "população" )) %>%
   ggplot(aes(x=valor, y= sigla_uf, fill= componente)) +
-  #xlim(c(0,12)) +
+  scale_fill_discrete_qualitative(palette = "Cold")+
   geom_col(show.legend = FALSE) +
   geom_text(aes(label=round(valor,1) ,hjust= ifelse(valor>0, -0.1,1.1)), size=2.5 , position = position_stack(vjust = 0.8)) +
   facet_wrap(decada ~ .) +
@@ -164,7 +165,7 @@ dados_calculo_paper_agregado %>%
   filter(componente %in% c("media_gc","media_gN_vc")) %>%
   mutate(componente = ifelse(componente == "media_gc", "consumo", "população" )) %>%
   ggplot(aes(x=valor, y= sigla_uf, fill= componente)) +
-  #xlim(c(0,12)) +
+  scale_fill_discrete_qualitative(palette = "Cold")+
   geom_col() +
   geom_text(aes(label=round(valor,1) ,hjust= ifelse(valor>0, -0.1,1.1)), size=2.5 , position = position_stack(vjust = 0.8)) +
   facet_wrap(decada ~ .) +
@@ -187,22 +188,71 @@ graf1 + graf2
 
 
 ```{r}
+
+estados<- c("DF","PI","AM","RS")
+
+ultima_posicao<-
+  dados_calculo_paper %>%
+  filter(sigla_uf %in% estados ,
+         ano %in% c(2003,2019)) %>%
+  arrange(ano)
+
+
 dados_calculo_paper %>%
+  filter(sigla_uf %in% estados) %>%
   ggplot(aes(x=as.factor(ano), y=vc)) +
-  geom_line(aes(group = sigla_uf))
+  geom_line(aes(group = sigla_uf, color = sigla_uf), show.legend = FALSE, size =1) +
+  geom_text(data= ultima_posicao, aes(label = sigla_uf, color = sigla_uf), hjust = c(rep(1,NROW(estados)),rep(-0.1,NROW(estados))), show.legend = FALSE)+
+  scale_color_discrete_qualitative(palette = "Dark 3") +
+  theme_light() +
+  theme(
+    panel.grid =  element_blank()
+  ) +
+  labs(
+    x= "",
+    y= "valor da vida per capita",
+    title = "Evolução do valor da vida per capita"
+  )
+  
 ```
 
 ```{r}
 
 dados_calculo_paper %>%
+  filter(sigla_uf %in% estados) %>%
   ggplot(aes(x=as.factor(ano), y=gN)) +
-  geom_line(aes(group = sigla_uf))
+  geom_line(aes(group = sigla_uf, color = sigla_uf), show.legend = FALSE, size =1) +
+  geom_text(data= ultima_posicao, aes(label = sigla_uf, color = sigla_uf), hjust = c(rep(1,NROW(estados)),rep(-0.1,NROW(estados))), show.legend = FALSE) +
+  scale_color_discrete_qualitative(palette = "Dark 3") +
+  theme_light() +
+  theme(
+    panel.grid =  element_blank()
+  ) +
+  labs(
+    x= "",
+    y= "Variação da população em (%)",
+    title = "Evolução da variação da população"
+  )
+ 
+
 ```
 
 ```{r}
 dados_calculo_paper %>%
-  ggplot(aes(x=as.factor(ano), y=gC)) +
-  geom_line(aes(group = sigla_uf))
+  filter(sigla_uf %in% estados) %>%
+  ggplot(aes(x=as.factor(ano), y=gC))  +
+  geom_line(aes(group = sigla_uf, color = sigla_uf), show.legend = FALSE, size =1) +
+  geom_text(data= ultima_posicao, aes(label = sigla_uf, color = sigla_uf), hjust = c(rep(1,NROW(estados)),rep(-0.1,NROW(estados))), show.legend = FALSE) +
+  scale_color_discrete_qualitative(palette = "Dark 3") +
+  theme_light() +
+  theme(
+    panel.grid =  element_blank()
+  ) +
+  labs(
+    x= "",
+    y= "Variação do consumo per capita em (%)",
+    title = "Evolução da variação do consumo per capita"
+  )
 ```
 
 ```{r}
