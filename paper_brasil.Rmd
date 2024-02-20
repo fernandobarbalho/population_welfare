@@ -7,6 +7,8 @@ date: "2024-02-19"
 ```{r setup, include=FALSE}
 library(tidyverse)
 library(colorspace)
+library(patchwork)
+library(sf)
 
 
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
@@ -14,8 +16,8 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 dados_estados_paper <- readRDS("~/github/population_welfare/dados_estados_paper.RDS")
 mapa_estados <- readRDS("~/Github/population_welfare/mapa_estados.rds")
 
-const_u<- 4.164864 #Confomre cálculo feito em paper.R
-const_c<- 44419.22 #Confomre cálculo feito em paper.R
+const_u<- 4.800666 #Confomre cálculo feito em paper.R
+const_c<- 38536.32 #Confomre cálculo feito em paper.R
 
 ```
 
@@ -69,13 +71,12 @@ dados_calculo_paper_agregado %>%
 
 
 ```{r}
-mapa_estados %>%
-  inner_join(
-    dados_calculo_paper_agregado %>%
-      rename(abbrev_state = sigla_uf)
-    ) %>%
-  ggplot()+
-  geom_sf(aes(fill=glambda_periodo)) +
+
+dados_calculo_paper_agregado %>%
+      rename(abbrev_state = sigla_uf) %>%
+inner_join(mapa_estados)%>%
+  ggplot(aes(geometry = geom))+
+  geom_sf(aes( fill=glambda_periodo)) +
   scale_fill_continuous_sequential(palette="Heat") +
   facet_wrap(decada~.) +
   theme_void() +
@@ -88,6 +89,102 @@ mapa_estados %>%
   
 
 ```
+
+```{r}
+
+graf1<-
+dados_calculo_paper_agregado %>%
+  filter(decada == "2003 - 2010") %>%
+  mutate(sigla_uf = reorder(sigla_uf, glambda_periodo )) %>%
+  ggplot(aes(x=glambda_periodo, y= sigla_uf)) +
+  xlim(c(0,12))+
+  geom_col() +
+  geom_text(aes(label=round(glambda_periodo,1)),size=2.8, hjust = -0.1)+
+  facet_wrap(decada~.) +
+  theme_light() +
+  theme(
+    panel.grid =  element_blank() 
+  ) +
+  labs(
+    title = str_wrap("Crescimento do bem estar equivalente ao consumo (%)",30),
+    x= "",
+    y=""
+  )
+
+graf2<-
+dados_calculo_paper_agregado %>%
+  filter(decada == "2011 - 2019") %>%
+  mutate(sigla_uf = reorder(sigla_uf, glambda_periodo )) %>%
+  ggplot(aes(x=glambda_periodo, y= sigla_uf)) +
+  geom_col() +
+  geom_text(aes(label=round(glambda_periodo,1)),size=2.8, hjust = -0.1)+
+  xlim(c(0,12))+
+  facet_wrap(decada~.) +
+  theme_light() +
+  theme(
+    panel.grid =  element_blank() 
+  ) +
+  labs(
+    x= "",
+    y=""
+  )
+
+graf1 + graf2 
+
+  
+```
+
+```{r}
+
+graf1<-
+dados_calculo_paper_agregado %>%
+  filter(decada == "2003 - 2010") %>%
+  mutate(sigla_uf = reorder(sigla_uf, glambda_periodo )) %>%
+  pivot_longer(cols=3:8, names_to = "componente", values_to = "valor") %>%  
+  filter(componente %in% c("media_gc","media_gN_vc")) %>%
+  mutate(componente = ifelse(componente == "media_gc", "consumo", "população" )) %>%
+  ggplot(aes(x=valor, y= sigla_uf, fill= componente)) +
+  #xlim(c(0,12)) +
+  geom_col(show.legend = FALSE) +
+  geom_text(aes(label=round(valor,1) ,hjust= ifelse(valor>0, -0.1,1.1)), size=2.5 , position = position_stack(vjust = 0.8)) +
+  facet_wrap(decada ~ .) +
+  theme_light() +
+  theme(panel.grid = element_blank())  +
+  labs(
+    title = str_wrap("Crescimento do bem estar equivalente ao consumo (%)",30),
+    x= "",
+    y=""
+  )
+
+graf2<-
+dados_calculo_paper_agregado %>%
+  filter(decada == "2011 - 2019") %>%
+  mutate(sigla_uf = reorder(sigla_uf, glambda_periodo )) %>%
+  pivot_longer(cols=3:8, names_to = "componente", values_to = "valor") %>%  
+  filter(componente %in% c("media_gc","media_gN_vc")) %>%
+  mutate(componente = ifelse(componente == "media_gc", "consumo", "população" )) %>%
+  ggplot(aes(x=valor, y= sigla_uf, fill= componente)) +
+  #xlim(c(0,12)) +
+  geom_col() +
+  geom_text(aes(label=round(valor,1) ,hjust= ifelse(valor>0, -0.1,1.1)), size=2.5 , position = position_stack(vjust = 0.8)) +
+  facet_wrap(decada ~ .) +
+  theme_light() +
+  theme(panel.grid = element_blank(),
+        legend.position = "bottom") +
+  labs(
+    x = "",
+    y = ""
+  )
+
+
+
+
+
+graf1 + graf2 
+
+```
+
+
 
 ```{r}
 dados_calculo_paper %>%

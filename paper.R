@@ -8,7 +8,7 @@ valores_referencia<-
   filter(countrycode == "USA",
          year== 2006)
 
-cons_per_capita_ref <- (valores_referencia$rgdpna*(valores_referencia$csh_c+valores_referencia$csh_g)) /valores_referencia$pop
+cons_per_capita_ref <- (valores_referencia$rgdpna*(valores_referencia$csh_c+0)) /valores_referencia$pop #desconsiderei o percenutal de gasto de governo para chegar nos 38k dolares per capita
 
 const_u <- (185000/cons_per_capita_ref)  #4.87
 
@@ -20,11 +20,10 @@ paises<- c("USA","DEU","JPN","MEX","BRA", "ZAF", "CHN", "IND" , "ETH" )
 pwt1001 %>%
   filter(countrycode %in% paises,
          year == 2019) %>%
-  mutate(ct_current = (ccon)/(pop),
-         ct_constant = (rconna)/(pop),
+  mutate(ct_constant = (rgdpna*csh_c)/(pop),
          vc = const_u + log(ct_constant/const_c)
   ) %>%
-  select(year, country,  ccon, rconna, pop,  ct_current,   vc) %>%
+  select(year, country,  rgdpna, csh_c,  rconna, pop,  ct_constant,   vc) %>%
   mutate(country = reorder(country,vc)) %>%
   ggplot() +
   geom_col(aes(x=vc, y= country), fill= "#0072bd") +
@@ -68,7 +67,7 @@ df_trabalho_v2<-
   group_by(countrycode) %>%
   filter(year >= 1959) %>%
   mutate(gN =  ((pop/lag(pop))-1) *100,
-         cons_per_capita = (rgdpna*(csh_c+csh_g)) /pop, 
+         cons_per_capita = (rgdpna*(csh_c+0)) /pop, 
          gC = (((cons_per_capita) /lag(cons_per_capita))-1)*100,
          vc = const_u + log(cons_per_capita/const_c),
          gN_vc = gN * vc,
