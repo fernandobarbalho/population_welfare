@@ -76,8 +76,10 @@ dados_estados %>%
   ) %>%
   mutate(valor  = valor /100,
          populacao = populacao/10^6) %>%
-  mutate(consumo_uf = valor * ((csh_c+0)*rgdpna)) %>% #Cálculo do consumo estimado por UF em US$ 2017
-  mutate(consumo_per_capita = consumo_uf/populacao)
+  mutate(consumo_uf = valor * ((csh_c+csh_g)*rgdpna)) %>% #Cálculo do consumo estimado por UF em US$ 2017
+  mutate(consumo_uf_s_governo = valor * ((csh_c+0)*rgdpna)) %>% #Cálculo do consumo estimado por UF em US$ 2017
+  mutate(consumo_per_capita = consumo_uf/populacao) %>%
+  mutate(consumo_per_capita_s_governo = consumo_uf_s_governo/populacao )
 
 
 

@@ -17,8 +17,8 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 dados_estados_paper <- readRDS("~/github/population_welfare/dados_estados_paper.RDS")
 mapa_estados <- readRDS("~/Github/population_welfare/mapa_estados.rds")
 
-const_u<- 4.87 #Confomre valores vindo do paper
-const_c<- 38000 #Confomre valores vindo do paper
+const_u<- 4.87 #Conforme valores vindo do paper
+const_c<- 38000 #Conforme valores vindo do paper
 
 ```
 
@@ -30,7 +30,7 @@ dados_calculo_paper<-
   group_by(sigla_uf) %>%
   mutate(gN =  ((populacao/lag(populacao))-1) *100,
          gC = (((consumo_per_capita) /lag(consumo_per_capita))-1)*100,
-         vc = const_u + log(consumo_per_capita/const_c),
+         vc = const_u + log(consumo_per_capita_s_governo/const_c),
          gN_vc = gN * vc,
          glambda = gN_vc + gC,
          decada = case_when(
@@ -50,7 +50,7 @@ dados_calculo_paper%>%
   summarise(
     media_gc = mean(gC, na.rm = TRUE),
     media_gN = mean(gN, na.rm = TRUE),
-    media_vc = mean(const_u + log(consumo_per_capita/const_c), na.rm = TRUE),
+    media_vc = mean(vc),
     media_gN_vc = mean(gN_vc, na.rm = TRUE), # media_gN * media_vc,
     glambda_periodo = media_gN_vc + media_gc ,
     pop_share = (media_gN_vc/glambda_periodo)*100,
